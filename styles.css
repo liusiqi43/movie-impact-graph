@@ -91,13 +91,13 @@ body {
 }
 
 .movie {
-  background-color: #1f77b4;
+  background-color: #2ca02c;
 }
 
 .actor {
-  background-color: #ff7f0e;
+  background-color: #1f77b4;
 }
 
 .director {
-  background-color: #2ca02c;
+  background-color: #ff7f0e;
 }

@@ -7,19 +7,20 @@ def fetch_popular_movies(since_year = 2010, limit = 100):
 	page = 1
 	options = [
 		settings.api_key,
+		settings.min_vote_avg,
 		since_year,
 		page,
 	]
 
 	movies = []
 	while limit > 0:
-		request = Request('http://api.themoviedb.org/3/discover/movie?api_key={}&sort_by=popularity.desc&primary_release_year.gte={}&page={}'.format(*options),
+		request = Request('http://api.themoviedb.org/3/discover/movie?api_key={}&sort_by=popularity.desc&vote_average.gte={}&primary_release_year.gte={}&page={}'.format(*options),
 					  	  headers=settings.headers)
 		response_body = urlopen(request).read()
 		response_json = json.loads(response_body)
 		movies += response_json["results"][:limit]
 		limit -= len(response_json["results"])
-		options[2] += 1
+		options[3] += 1
 	return movies
 
 def fetch_crew_for_movies(movies):
@@ -50,6 +51,26 @@ def _get_people_node(graph, pid_to_node, people):
 		pid_to_node[people['id']] = pid
 	return node
 
+def _construct_connexe_component(graph):
+	connected_nodes = []
+	for link in graph['links']:
+		last_set = None
+		for s in connected_nodes:
+			if link['source'] in s or link['target'] in s:
+				s.add(link['source'])
+				s.add(link['target'])
+				if last_set is not None:
+					s.update(last_set)
+					connected_nodes.remove(last_set)
+				last_set = s
+		if last_set is None:
+			connected_nodes.append(set([link['source'], link['target']]))
+	print connected_nodes
+	for i in xrange(len(connected_nodes)):
+		for index in connected_nodes[i]:
+			graph['nodes'][index]['connected_group'] = i
+
+
 def movies_to_graph(movies, output_file):
 	graph = {}
 	graph['nodes'] = []
@@ -62,6 +83,8 @@ def movies_to_graph(movies, output_file):
 		graph['nodes'].append({'id': movie['id'],
 							   'popularity': movie['popularity'],
 							   'name': movie['title'],
+							   'connected_group': -1, # default connected component.
+							   'vote_average': movie['vote_average']*4,
 							   'group': settings.groups_node['Movie']})
 		for people in movie['credits']['cast'][:settings.related_actors_number]:
 			node = _get_people_node(graph, pid_to_node, people)
@@ -69,10 +92,13 @@ def movies_to_graph(movies, output_file):
 				node = {'id': people['id'],
 					   'name': people['name'],
 					   'popularity': math.sqrt(movie['popularity']),
+					   'connected_group': -1, # default connected component.
+					   'vote_average': movie['vote_average'],
 					   'group': settings.groups_node['Actor']}
 				graph['nodes'].append(node)
 			else:
 				node['popularity'] += math.sqrt(movie['popularity'])
+				node['vote_average'] += movie['vote_average']/2
 			graph['links'].append({'source':pid_to_node[node['id']], 'target':mid, 'group': settings.groups_link['Acting']})
 
 		if len(movie['credits']['crew']) == 0:
@@ -86,11 +112,16 @@ def movies_to_graph(movies, output_file):
 			node = {'id':director['id'],
 				   'name': director['name'],
 				   'popularity': math.sqrt(movie['popularity']),
+				   'connected_group': -1, # default connected component.
+				   'vote_average': movie['vote_average'],
 				   'group': settings.groups_node['Director']}
 			graph['nodes'].append(node)
 		else:
 			node['popularity'] += math.sqrt(movie['popularity'])
+			node['vote_average'] += movie['vote_average']/2
 		graph['links'].append({'source':pid_to_node[node['id']], 'target':mid, 'group': settings.groups_link['Directing']})
+
+	_construct_connexe_component(graph)
 	json.dump(graph, output_file, indent=4)
 
 

@@ -93,7 +93,8 @@ d3.json("data/graph.json", function(error, graph) {
       .data(graph.links)
     .enter().append("line")
       .attr("class", "link")
-      .style("stroke-width", function(d) { return Math.sqrt(d.value); });
+      .style("stroke-width", function(d) { return Math.sqrt(d.value); })
+      .style("stroke", function(d) {return color(d.group)});
 
   var gnodes = container.append("g")
     .selectAll("g.gnode")
@@ -104,8 +105,12 @@ d3.json("data/graph.json", function(error, graph) {
 
   var node = gnodes.append("circle")
       .attr("class", "node")
-      .attr("r", function(d) {return Math.min(50, d.popularity)})
+      // .attr("r", function(d) {return Math.min(50, d.popularity)})
+      .attr("r", function(d) {return d.vote_average})
       .style("fill", function(d) { return color(d.group); });
+
+  gnodes.on("mouseover", fade(node, link, .2))
+        .on("mouseout", fade(node, link, 1));
 
   gnodes.append("text")
       .attr("class", function(d){ return "nodetext" })
@@ -126,6 +131,7 @@ d3.json("data/graph.json", function(error, graph) {
         return 'translate(' + [d.x, d.y] + ')';
     });
   });
+
 });
 
 function zoomed() {
@@ -138,12 +144,29 @@ function dragstarted(d) {
 }
 
 function dragged(d) {
-  // d3.select(this).attr("cx", d.x = d3.event.x).attr("cy", d.y = d3.event.y);
-  // force.drag(d);
 }
 
 function dragended(d) {
   d3.select(this).classed("dragging", false);
+}
+
+function isConnected(a, b) {
+    return b.connected_group != -1 && a.connected_group != -1 && a.connected_group == b.connected_group;
+}
+
+function fade(node, link, opacity) {
+    return function(d) {
+        node.style("stroke-opacity", function(o) {
+            node_opacity = isConnected(d, o) ? 1 : opacity;
+            this.setAttribute('fill-opacity', node_opacity);
+            return node_opacity;
+        });
+
+        link.style("stroke-opacity", function(o) {
+            // return o.source === d || o.target === d ? 1 : opacity;
+            return isConnected(graph.nodes[d], graph.nodes[o]) ? 1 : opacity;
+        })
+    };
 }
 
 </script>

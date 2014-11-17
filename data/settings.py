@@ -5,11 +5,11 @@ headers = {
 }
 
 groups_node = {
-	'Movie' : 6,
-	'Actor': 2,
-	'Director': 3,
-	'Producer': 4,
-	'Genre': 5,
+	'Movie' : 9,
+	'Actor': 1,
+	'Director': 2,
+	'Producer': 3,
+	'Genre': 4,
 }
 
 groups_link = {
@@ -19,6 +19,7 @@ groups_link = {
 	'Belonging': 4,
 }
 
-related_actors_number = 5
-since_year = 2010
+related_actors_number = 4
+since_year = 2000
 fetch_popular_movies = 250
+min_vote_avg = 5
