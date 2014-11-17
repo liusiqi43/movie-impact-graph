@@ -19,4 +19,6 @@ groups_link = {
 	'Belonging': 4,
 }
 
-related_actors_number = 3
+related_actors_number = 5
+since_year = 2010
+fetch_popular_movies = 250

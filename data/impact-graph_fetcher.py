@@ -94,7 +94,7 @@ def movies_to_graph(movies, output_file):
 	json.dump(graph, output_file, indent=4)
 
 
-movies = fetch_popular_movies(2014, 100)
+movies = fetch_popular_movies(settings.since_year, settings.fetch_popular_movies)
 fetch_crew_for_movies(movies)
 
 with open('graph.json', 'w') as f:
