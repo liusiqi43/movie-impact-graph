@@ -105,8 +105,8 @@ d3.json("data/graph.json", function(error, graph) {
 
   var node = gnodes.append("circle")
       .attr("class", "node")
-      .attr("r", function(d) {return Math.min(50, d.popularity)})
-      // .attr("r", function(d) {return d.vote_average})
+      // .attr("r", function(d) {return Math.min(50, d.popularity)})
+      .attr("r", function(d) {return d.vote_average})
       .style("fill", function(d) { return color(d.group); });
 
   gnodes.on("mouseover", fade(node, link, .2))
