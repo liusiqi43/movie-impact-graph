@@ -1,4 +1,5 @@
 from urllib2 import Request, urlopen
+import time
 import json
 import math
 import settings
@@ -13,6 +14,7 @@ def fetch_popular_movies(since_year = 2010, limit = 100):
 
 	movies = []
 	while limit > 0:
+                time.sleep(0.1)
 		request = Request('http://api.themoviedb.org/3/discover/movie?api_key={}&sort_by=popularity.desc&primary_release_year.gte={}&page={}'.format(*options),
 					  	  headers=settings.headers)
 		response_body = urlopen(request).read()
@@ -30,6 +32,7 @@ def fetch_crew_for_movies(movies):
 			mid,
 			settings.api_key,
 		]
+                time.sleep(0.1)
 		request = Request('http://api.themoviedb.org/3/movie/{}?api_key={}&append_to_response=credits'.format(*options),
 					  	  headers=settings.headers)
 		response_body = urlopen(request).read()
